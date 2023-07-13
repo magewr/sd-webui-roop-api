@@ -17,6 +17,10 @@ from scripts.swapper import UpscaleOptions, swap_face, ImageResult
 from scripts.roop_version import version_flag
 import os
 
+from io import BytesIO
+import base64
+
+
 
 def get_models():
     models_path = os.path.join(scripts.basedir(), "models" + os.path.sep + "roop" + os.path.sep + "*")
@@ -141,18 +145,43 @@ class FaceSwapScript(scripts.Script):
         swap_in_source,
         swap_in_generated,
     ):
-        self.source = img
-        self.face_restorer_name = face_restorer_name
-        self.upscaler_scale = upscaler_scale
-        self.upscaler_visibility = upscaler_visibility
-        self.face_restorer_visibility = face_restorer_visibility
-        self.enable = enable
-        self.upscaler_name = upscaler_name
-        self.swap_in_generated = swap_in_generated
-        self.model = model
-        self.faces_index = {
-            int(x) for x in faces_index.strip(",").split(",") if x.isnumeric()
-        }
+        if isinstance(img, dict):
+            api_param = img
+            self.source = Image.open(BytesIO(base64.b64decode(api_param["img"])))
+            self.face_restorer_name = api_param["face_restorer_name"]
+            self.upscaler_scale = api_param["upscaler_scale"]
+            self.upscaler_visibility = api_param["upscaler_visibility"]
+            self.face_restorer_visibility = api_param["face_restorer_visibility"]
+            self.enable = api_param["enable"]
+            self.upscaler_name = api_param["upscaler_name"]
+            self.swap_in_generated = api_param["swap_in_generated"]
+            self.model = api_param["model"]
+            self.faces_index = {
+                int(x) for x in api_param["faces_index"].strip(",").split(",") if x.isnumeric()
+            }
+        else:
+            self.source = img
+            self.face_restorer_name = face_restorer_name
+            self.upscaler_scale = upscaler_scale
+            self.upscaler_visibility = upscaler_visibility
+            self.face_restorer_visibility = face_restorer_visibility
+            self.enable = enable
+            self.upscaler_name = upscaler_name
+            self.swap_in_generated = swap_in_generated
+            self.model = model
+            self.faces_index = {
+                int(x) for x in faces_index.strip(",").split(",") if x.isnumeric()
+            }
+        print(f"self.source: {self.source}")
+        print(f"self.face_restorer_name: {self.face_restorer_name}")
+        print(f"self.upscaler_scale: {self.upscaler_scale}")
+        print(f"self.upscaler_visibility: {self.upscaler_visibility}")
+        print(f"self.face_restorer_visibility: {self.face_restorer_visibility}")
+        print(f"self.enable: {self.enable}")
+        print(f"self.upscaler_name: {self.upscaler_name}")
+        print(f"self.swap_in_generated: {self.swap_in_generated}")
+        print(f"self.model: {self.model}")
+        print(f"self.faces_index: {self.faces_index}")
         if len(self.faces_index) == 0:
             self.faces_index = {0}
         if self.enable:
@@ -178,6 +207,7 @@ class FaceSwapScript(scripts.Script):
             return images
 
     def postprocess_image(self, p, script_pp: scripts.PostprocessImageArgs, *args):
+        # print(f"postProcess image, source: {self.source}")
         if self.enable and self.swap_in_generated:
             if self.source is not None:
                 image: Image.Image = script_pp.image
