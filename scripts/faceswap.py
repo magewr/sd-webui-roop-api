@@ -155,7 +155,7 @@ class FaceSwapScript(scripts.Script):
             self.enable = api_param["enable"]
             self.upscaler_name = api_param["upscaler_name"]
             self.swap_in_generated = api_param["swap_in_generated"]
-            self.model = api_param["model"]
+            self.model = os.path.join(scripts.basedir(), "models" + os.path.sep + "roop" + os.path.sep + "inswapper_128.onnx")
             self.faces_index = {
                 int(x) for x in api_param["faces_index"].strip(",").split(",") if x.isnumeric()
             }
